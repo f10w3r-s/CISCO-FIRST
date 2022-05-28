@@ -1,7 +1,5 @@
 import random
 import functools
-from signal import default_int_handler
-
 
 #   Third Party Python Modules
 required_modules_loaded = True
