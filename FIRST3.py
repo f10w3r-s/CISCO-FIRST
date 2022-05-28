@@ -5132,12 +5132,3 @@ def PLUGIN_ENTRY():
 
     idaapi.execute_ui_requests((FIRSTUI.Requests.Print('[1st] Unable to load all required modules.\n'),))
     return None
-
-def main():
-    # FB418C7A-0CEF-4E2F-A541-B9D40CAAC155
-    fuck = FIRST_Plugin()
-    fuck.init()
-    fuck.run("FUCK")
-
-if __name__ == '__main__':
-    main()
