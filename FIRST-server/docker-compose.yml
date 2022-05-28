@@ -1,0 +1,30 @@
+version: '2'
+services:
+   api:
+      build: .
+      ports:
+         - 80:80
+         - 443:443
+         - 1337:1337
+      depends_on:
+         - mysql
+      environment:
+         - MYSQL_USER=root
+         - MYSQL_PASSWORD=password12345
+         - MYSQL_DATABASE=first_db
+         - MYSQL_HOST=mysql
+         - MYSQL_PORT=3306
+         - GOOGLE_SECRET=/usr/local/etc/google_secret.json
+      volumes:
+          - ./data/ssl:/etc/apache2/ssl
+      restart: always
+   mysql:
+      image: mysql:5.7
+      expose:
+         - 3306
+      environment:
+         - MYSQL_ROOT_PASSWORD=password12345
+         - MYSQL_DATABASE=first_db
+      volumes:
+         - ./data/mysql:/var/lib/mysql
+      restart: always
