@@ -1,5 +1,7 @@
 import random
 import functools
+from signal import default_int_handler
+
 
 #   Third Party Python Modules
 required_modules_loaded = True
@@ -2106,7 +2108,7 @@ class FIRST(object):
 
                 if raw:
                     return response
-
+            
             except requests.exceptions.ConnectionError as e:
                 title = 'Cannot connect to FIRST'
                 msg = ('Unable to connect to FIRST server at {0}\n'
@@ -2252,7 +2254,6 @@ class FIRST(object):
             if server_thread in self.threads:
                 del self.threads[server_thread]
 
-        #   Test connection URL
         def test_connection(self):
             '''Interacts with server to see if there is a valid connection.
 
@@ -2272,7 +2273,6 @@ class FIRST(object):
 
             return data and ('status' in data) and ('connected' == data['status'])
 
-        #   Signature URLS
         def add(self, metadata, data_callback=None, complete_callback=None):
             '''Adds function metadata to FIRST.
 
@@ -2299,7 +2299,30 @@ class FIRST(object):
             thread.daemon = True
             thread.start()
             return thread
+        
+        def add_c(self, metadata, data_callback=None, complete_callback=None):
+            '''Adds function metadata to FIRST.
 
+            This is a long operation, thus it has the option of providing a
+            ``data_callback`` and ``complete_callback`` arguments. Those
+            arguments are functions that will be called with the newly returned
+            data and when the whole operation is complete, respectively. Both
+            functions should follow the below their respective prototypes;
+            ``data_callback_prototype`` and ``complete_callback_prototype``.
+
+            Args:
+                metadata (:obj:`list` of :obj:`MetadataShim` or
+                    :obj:`MetadataShim`): The metadata to be added to FIRST.
+                data_callback (:obj:`data_callback_prototype`, optional):
+                    A function to call when data is receieved from the server.
+                complete_callback (:obj:`complete_callback_prototype`, optional):
+                    A function to call when the whole long operation completes.
+
+            Returns:
+                threading.Thread. The thread created for the operation.
+            '''
+            self.__thread_add(metadata, data_callback, complete_callback)
+        
         def __thread_add(self, metadata, data_callback=None, complete_callback=None):
             '''thread'''
             thread = threading.current_thread()
@@ -2313,7 +2336,6 @@ class FIRST(object):
                 self.threads[thread]['complete'] = True
                 if complete_callback:
                     complete_callback(thread, self.threads[thread])
-
                 return
 
             architecture = FIRST.Info.get_architecture()
@@ -2460,6 +2482,27 @@ class FIRST(object):
             thread.start()
             return thread
 
+        def created_c(self, data_callback=None, complete_callback=None):
+            '''Retrieves FIRST annotations the user has created.
+
+            This is a long operation, thus it has the option of providing a
+            ``data_callback`` and ``complete_callback`` arguments. Those
+            arguments are functions that will be called with the newly returned
+            data and when the whole operation is complete, respectively. Both
+            functions should follow the below their respective prototypes;
+            ``data_callback_prototype`` and ``complete_callback_prototype``.
+
+            Args:
+                data_callback (:obj:`data_callback_prototype`, optional):
+                    A function to call when data is receieved from the server.
+                complete_callback (:obj:`complete_callback_prototype`, optional):
+                    A function to call when the whole long operation completes.
+
+            Returns:
+                threading.Thread. The thread created for the operation.
+            '''
+            self.__thread_created(data_callback, complete_callback)
+
         def __thread_created(self, data_callback=None, complete_callback=None):
             '''Thread to get created data'''
             thread = threading.current_thread()
@@ -2530,6 +2573,29 @@ class FIRST(object):
             thread.daemon = True
             thread.start()
             return thread
+
+        def get_c(self, metadata_ids, data_callback=None, complete_callback=None):
+            '''Retrieves FIRST annotations the user has created.
+
+            This is a long operation, thus it has the option of providing a
+            ``data_callback`` and ``complete_callback`` arguments. Those
+            arguments are functions that will be called with the newly returned
+            data and when the whole operation is complete, respectively. Both
+            functions should follow the below their respective prototypes;
+            ``data_callback_prototype`` and ``complete_callback_prototype``.
+
+            Args:
+                metadata (:obj:`list` of :obj:`MetadataShim`): The metadata to
+                    be retrieved from FIRST.
+                data_callback (:obj:`data_callback_prototype`, optional):
+                    A function to call when data is receieved from the server.
+                complete_callback (:obj:`complete_callback_prototype`, optional):
+                    A function to call when the whole long operation completes.
+
+            Returns:
+                threading.Thread. The thread created for the operation.
+            '''
+            self.__thread_get(metadata_ids, data_callback, complete_callback)
 
         def __thread_get(self, metadata, data_callback=None, complete_callback=None):
             '''Thread to get metadata'''
@@ -2605,6 +2671,29 @@ class FIRST(object):
             thread.daemon = True
             thread.start()
             return thread
+
+        def scan_c(self, metadata, data_callback=None, complete_callback=None):
+            '''Queries FIRST for matches.
+
+            This is a long operation, thus it has the option of providing a
+            ``data_callback`` and ``complete_callback`` arguments. Those
+            arguments are functions that will be called with the newly returned
+            data and when the whole operation is complete, respectively. Both
+            functions should follow the below their respective prototypes;
+            ``data_callback_prototype`` and ``complete_callback_prototype``.
+
+            Args:
+                metadata (:obj:`list` of :obj:`MetadataShim`): The metadata to
+                    be queried for matches in FIRST.
+                data_callback (:obj:`data_callback_prototype`, optional):
+                    A function to call when data is receieved from the server.
+                complete_callback (:obj:`complete_callback_prototype`, optional):
+                    A function to call when the whole long operation completes.
+
+            Returns:
+                threading.Thread. The thread created for the operation.
+            '''
+            self.__thread_scan(metadata, data_callback, complete_callback)
 
         def __thread_scan(self, metadata, data_callback=None, complete_callback=None):
             '''Thread to query FIRST for metadata'''
@@ -5130,3 +5219,4 @@ def PLUGIN_ENTRY():
 
     idaapi.execute_ui_requests((FIRSTUI.Requests.Print('[1st] Unable to load all required modules.\n'),))
     return None
+
